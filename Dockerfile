@@ -10,6 +10,7 @@ RUN cd /tmp \
     && cd restic-* \
     # build the executable
     # flag -ldflags "-s -w" produces a smaller executable
+    && go get  -u=patch  github.com/minio/minio-go/v7@v7.0.70 \
     && go build -ldflags "-s -w" -v -o /tmp/restic ./cmd/restic
 
 FROM python:3.12-alpine3.20

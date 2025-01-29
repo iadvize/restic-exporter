@@ -1,22 +1,12 @@
-FROM golang:1.22.6-alpine3.20 AS builder
-
-ENV RESTIC_VERSION 0.17.0
-ENV CGO_ENABLED 0
-
-RUN cd /tmp \
-    # download restic source code
-    && wget https://github.com/restic/restic/archive/refs/tags/v${RESTIC_VERSION}.tar.gz -O restic.tar.gz \
-    && tar xvf restic.tar.gz \
-    && cd restic-* \
-    # build the executable
-    # flag -ldflags "-s -w" produces a smaller executable
-    && go build -ldflags "-s -w" -v -o /tmp/restic ./cmd/restic
+FROM fedora:latest AS restic-patch
+RUN \
+    dnf install -y restic
 
 FROM python:3.12-alpine3.20
 
 RUN apk add --no-cache --update openssh tzdata
 
-COPY --from=builder /tmp/restic /usr/bin
+COPY --from=restic-patch /usr/bin/restic /usr/bin/restic
 COPY entrypoint.sh requirements.txt /
 
 RUN pip install -r /requirements.txt \
